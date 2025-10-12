@@ -29,14 +29,26 @@ export async function middleware(request) {
     }
   );
 
-  // Refresh session if expired
+  // Refresh session if expired - this is important for maintaining auth state
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   // Protected routes check
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/", request.url));
+  const protectedRoutes = ["/dashboard", "/upload"];
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  if (!user && isProtectedRoute) {
+    const redirectUrl = new URL("/signin", request.url);
+    redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Redirect authenticated users away from signin page
+  if (user && request.nextUrl.pathname === "/signin") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return supabaseResponse;

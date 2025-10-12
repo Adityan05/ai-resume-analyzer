@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { FcGoogle } from "react-icons/fc";
 
-export default function SignInComponent() {
+function SignInForm() {
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState(null);
@@ -40,7 +40,7 @@ export default function SignInComponent() {
     });
 
     return () => subscription.unsubscribe();
-  }, [redirectTo]);
+  }, [redirectTo, router, supabase.auth]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -95,5 +95,24 @@ export default function SignInComponent() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignInComponent() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full max-w-md">
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-800 dark:bg-gray-900">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }
