@@ -39,7 +39,15 @@ export async function middleware(request) {
         error?.code === "refresh_token_not_found" ||
         error?.message?.toLowerCase?.().includes("refresh token")
       ) {
-        const response = NextResponse.redirect(new URL("/signin", request.url));
+        const signInUrl = new URL("/signin", request.url);
+        // Ensure HTTP for localhost
+        if (
+          request.nextUrl.hostname === "localhost" ||
+          request.nextUrl.hostname === "127.0.0.1"
+        ) {
+          signInUrl.protocol = "http:";
+        }
+        const response = NextResponse.redirect(signInUrl);
         // Proactively clear potential stale auth cookies
         response.cookies.delete("sb-access-token");
         response.cookies.delete("sb-refresh-token");
@@ -50,7 +58,15 @@ export async function middleware(request) {
     user = data?.user ?? null;
   } catch (e) {
     // On unexpected failures, treat as unauthenticated and clear cookies
-    const response = NextResponse.redirect(new URL("/signin", request.url));
+    const signInUrl = new URL("/signin", request.url);
+    // Ensure HTTP for localhost
+    if (
+      request.nextUrl.hostname === "localhost" ||
+      request.nextUrl.hostname === "127.0.0.1"
+    ) {
+      signInUrl.protocol = "http:";
+    }
+    const response = NextResponse.redirect(signInUrl);
     response.cookies.delete("sb-access-token");
     response.cookies.delete("sb-refresh-token");
     return response;
@@ -65,12 +81,27 @@ export async function middleware(request) {
   if (!user && isProtectedRoute) {
     const redirectUrl = new URL("/signin", request.url);
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    // Ensure HTTP for localhost
+    if (
+      request.nextUrl.hostname === "localhost" ||
+      request.nextUrl.hostname === "127.0.0.1"
+    ) {
+      redirectUrl.protocol = "http:";
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
   // Redirect authenticated users away from signin page
   if (user && request.nextUrl.pathname === "/signin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const dashboardUrl = new URL("/dashboard", request.url);
+    // Ensure HTTP for localhost
+    if (
+      request.nextUrl.hostname === "localhost" ||
+      request.nextUrl.hostname === "127.0.0.1"
+    ) {
+      dashboardUrl.protocol = "http:";
+    }
+    return NextResponse.redirect(dashboardUrl);
   }
 
   return supabaseResponse;

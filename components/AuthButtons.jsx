@@ -36,9 +36,10 @@ export default function AuthButtons() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
     setShowDropdown(false);
+    await supabase.auth.signOut();
+    // Use window.location for sign out to ensure clean state reset
+    window.location.href = "/";
   };
 
   // Prevent hydration mismatch

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import NProgress from "nprogress";
 
 export default function TopProgressBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     NProgress.configure({
@@ -28,25 +29,48 @@ export default function TopProgressBar() {
         url.pathname !== window.location.pathname
       ) {
         NProgress.start();
+        // Fallback timeout to ensure progress completes
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          NProgress.done();
+        }, 5000);
       }
     };
 
     document.addEventListener("click", onClick, true);
+
+    // Listen for page navigation events (including full page reloads)
+    const handleBeforeUnload = () => {
+      NProgress.done();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     // Monkey-patch router.push/replace to start progress for programmatic navs
     const origPush = router.push;
     const origReplace = router.replace;
     router.push = (...args) => {
       NProgress.start();
+      // Fallback timeout to ensure progress completes
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        NProgress.done();
+      }, 5000);
       return origPush(...args);
     };
     router.replace = (...args) => {
       NProgress.start();
+      // Fallback timeout to ensure progress completes
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        NProgress.done();
+      }, 5000);
       return origReplace(...args);
     };
 
     return () => {
       document.removeEventListener("click", onClick, true);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       router.push = origPush;
       router.replace = origReplace;
     };
@@ -54,6 +78,7 @@ export default function TopProgressBar() {
 
   // When the pathname updates (new route rendered), finish the progress
   useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     NProgress.done();
   }, [pathname]);
 

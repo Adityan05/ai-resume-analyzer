@@ -51,10 +51,14 @@ export async function GET(request) {
       }
 
       const forwardedHost = request.headers.get("x-forwarded-host");
-      const isLocalEnv = process.env.NODE_ENV === "development";
+      // Ensure HTTP for localhost even in production builds
+      const url = new URL(origin);
+      const isLocalhost =
+        url.hostname === "localhost" || url.hostname === "127.0.0.1";
 
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
+      if (isLocalhost) {
+        // Force HTTP for localhost to avoid SSL issues
+        return NextResponse.redirect(`http://${url.host}${next}`);
       } else if (forwardedHost) {
         return NextResponse.redirect(`https://${forwardedHost}${next}`);
       } else {
