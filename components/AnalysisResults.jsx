@@ -153,30 +153,7 @@ const AnalysisResults = ({ analysisResult }) => {
         </div>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex justify-center space-x-4">
-        <button
-          onClick={() => window.print()}
-          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-        >
-          Print Results
-        </button>
-        <button
-          onClick={() => {
-            const dataStr = JSON.stringify(analysisResult, null, 2);
-            const dataBlob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "resume-analysis.json";
-            link.click();
-            URL.revokeObjectURL(url);
-          }}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-        >
-          Download JSON
-        </button>
-      </div>
+      {/* Removed auxiliary actions (print/download) for a cleaner results UI */}
     </div>
   );
 };

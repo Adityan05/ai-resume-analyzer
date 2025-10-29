@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { FiUpload, FiFile, FiX, FiCheck } from "react-icons/fi";
 
 const FileUpload = ({
   onFileSelect,
   onJobDescriptionChange,
   jobDescription,
+  selectedFile,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -87,6 +88,17 @@ const FileUpload = ({
       fileInputRef.current.value = "";
     }
   };
+
+  // Sync with parent-selectedFile to support external resets
+  useEffect(() => {
+    if (selectedFile == null) {
+      setUploadedFile(null);
+      setError("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }, [selectedFile]);
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return "0 Bytes";

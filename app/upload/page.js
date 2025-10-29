@@ -100,10 +100,10 @@ export default function UploadPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         let errorMessage = "Analysis failed";
 
-        if (errorData.error) {
+        if (errorData?.error) {
           if (typeof errorData.error === "string") {
             errorMessage = errorData.error;
           } else if (typeof errorData.error === "object") {
@@ -112,11 +112,15 @@ export default function UploadPage() {
           }
         } else if (typeof errorData === "string") {
           errorMessage = errorData;
-        } else if (errorData.message) {
+        } else if (errorData?.message) {
           errorMessage = errorData.message;
         }
 
-        throw new Error(errorMessage);
+        // Show a user-friendly message but do not throw to avoid Next.js overlay
+        console.warn("Analysis failed:", errorMessage);
+        alert(errorMessage);
+        setAnalyzing(false);
+        return;
       }
 
       const result = await response.json();
@@ -204,6 +208,7 @@ export default function UploadPage() {
             onFileSelect={handleFileSelect}
             onJobDescriptionChange={handleJobDescriptionChange}
             jobDescription={jobDescription}
+            selectedFile={uploadedFile}
           />
 
           {uploadedFile && !analysisResult && (

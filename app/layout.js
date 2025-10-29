@@ -23,17 +23,18 @@ export default function RootLayout({ children }) {
       className={`${dmSans.className} ${dmSans.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
+      <body
+        suppressHydrationWarning
+        className="flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <header className="h-[12vh] min-h-[64px]">
-            <Navbar />
-          </header>
-          <main className="flex-1 overflow-auto">{children}</main>
+          <Navbar />
+          <main className="flex-1">{children}</main>
           <Footer />
         </ThemeProvider>
       </body>

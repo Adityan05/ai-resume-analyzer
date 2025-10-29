@@ -10,6 +10,7 @@ export default function AuthButtons() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
@@ -65,14 +66,15 @@ export default function AuthButtons() {
           onClick={() => setShowDropdown(!showDropdown)}
           className="flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-3 py-2 transition-colors"
         >
-          {avatarUrl ? (
+          {avatarUrl && !avatarError ? (
             <img
               src={avatarUrl}
               alt={displayName}
               className="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+              loading="lazy"
+              onError={() => setAvatarError(true)}
             />
           ) : (
             <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">

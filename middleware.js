@@ -30,9 +30,31 @@ export async function middleware(request) {
   );
 
   // Refresh session if expired - this is important for maintaining auth state
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      // If refresh token is missing/invalid, clear cookies and force re-auth
+      if (
+        error?.code === "refresh_token_not_found" ||
+        error?.message?.toLowerCase?.().includes("refresh token")
+      ) {
+        const response = NextResponse.redirect(new URL("/signin", request.url));
+        // Proactively clear potential stale auth cookies
+        response.cookies.delete("sb-access-token");
+        response.cookies.delete("sb-refresh-token");
+        return response;
+      }
+      // For other auth errors, proceed as unauthenticated
+    }
+    user = data?.user ?? null;
+  } catch (e) {
+    // On unexpected failures, treat as unauthenticated and clear cookies
+    const response = NextResponse.redirect(new URL("/signin", request.url));
+    response.cookies.delete("sb-access-token");
+    response.cookies.delete("sb-refresh-token");
+    return response;
+  }
 
   // Protected routes check
   const protectedRoutes = ["/dashboard", "/upload"];
