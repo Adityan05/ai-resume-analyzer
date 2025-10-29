@@ -21,6 +21,72 @@ const AnalysisResults = ({ analysisResult }) => {
     return "bg-red-500";
   };
 
+  // Simple markdown renderer for basic bold, italics, and bullet lists
+  const renderInline = (text) => {
+    // escape basic HTML
+    const escaped = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    // bold **text** and __text__
+    const withBold = escaped.replace(
+      /(\*\*|__)(.*?)\1/g,
+      "<strong>$2</strong>"
+    );
+    // italics *text* and _text_
+    const withItalics = withBold.replace(/(\*|_)(.*?)\1/g, "<em>$2</em>");
+    // inline code `code`
+    const withCode = withItalics.replace(/`([^`]+)`/g, "<code>$1</code>");
+    return withCode;
+  };
+
+  const renderMarkdownBlock = (text) => {
+    const lines = text.split(/\r?\n/);
+    const elements = [];
+    let listItems = [];
+
+    const flushList = () => {
+      if (listItems.length > 0) {
+        elements.push(
+          <ul
+            className="list-disc pl-6 space-y-1"
+            key={`ul-${elements.length}`}
+          >
+            {listItems.map((item, idx) => (
+              <li
+                key={idx}
+                dangerouslySetInnerHTML={{ __html: renderInline(item) }}
+              />
+            ))}
+          </ul>
+        );
+        listItems = [];
+      }
+    };
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (line.startsWith("- ") || line.startsWith("* ")) {
+        listItems.push(line.slice(2));
+        continue;
+      }
+      if (line.length === 0) {
+        flushList();
+        continue;
+      }
+      flushList();
+      elements.push(
+        <p
+          key={`p-${elements.length}`}
+          className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: renderInline(line) }}
+        />
+      );
+    }
+    flushList();
+    return <div className="space-y-2">{elements}</div>;
+  };
+
   return (
     <div className="mt-8 space-y-6 animate-fade-in">
       {/* Overall Score */}
@@ -143,9 +209,7 @@ const AnalysisResults = ({ analysisResult }) => {
                   {section}
                 </h3>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                    {rewrite}
-                  </p>
+                  {renderMarkdownBlock(rewrite)}
                 </div>
               </div>
             ))}
