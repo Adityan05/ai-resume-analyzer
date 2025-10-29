@@ -2,6 +2,7 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import TopProgressBar from "@/components/TopProgressBar";
 import { ThemeProvider } from "next-themes";
 const dmSans = DM_Sans({
   weight: ["400", "500", "700"],
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
+          <TopProgressBar />
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
