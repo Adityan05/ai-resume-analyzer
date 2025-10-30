@@ -6,8 +6,9 @@
 export async function extractTextFromPDF(fileBuffer) {
   try {
     const pdfModule = await import("pdf-parse");
-    // pdf-parse exports PDFParse and pdf functions directly
-    const data = await pdfModule.pdf(fileBuffer);
+    // v1 of pdf-parse exposes a default export function
+    const pdf = pdfModule.default || pdfModule.pdf || pdfModule;
+    const data = await pdf(fileBuffer);
     return data.text;
   } catch (error) {
     throw new Error(`Failed to extract text from PDF: ${error.message}`);
