@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+// Ensure this route runs on the Node.js runtime (not Edge),
+// because PDF parsing relies on Node APIs and native modules.
+export const runtime = "nodejs";
 import { extractTextFromFile } from "@/utils/fileExtraction";
 import { parseResumeText, cleanResumeData } from "@/utils/resumeParser";
 import { analyzeWithDeepSeek } from "@/utils/deepseekAPI";
